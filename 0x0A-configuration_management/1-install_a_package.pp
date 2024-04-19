@@ -1,11 +1,5 @@
-# A puppet manifest installing flask v2.1.0 which is a package from pip3.
-# Am also specifying the version of flask to install using the ensure attribute
-package {'flask':
-	ensure   => '2.1.0',
-	provider => 'pip3',
-}
-
-package {'werkzeug':
-	ensure	=> '2.1.1',
-	provider => 'pip3',
+# Define a package resource for Flask
+package { 'Flask':
+  ensure   => '2.1.0',   # Ensure version 2.1.0 is installed
+  provider => 'pip3',    # Use pip3 as the package provider
 }
