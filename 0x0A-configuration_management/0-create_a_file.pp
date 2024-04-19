@@ -1,8 +1,10 @@
-# Define the file resource for /tmp/school
+# Creates a file in tmp
+
 file { '/tmp/school':
-  ensure  => 'file',           # Ensure it's a file
-  mode    => '0744',           # Set file permissions to 0744
-  owner   => 'www-data',       # Set owner to www-data
-  group   => 'www-data',       # Set group to www-data
-  content => 'I love Puppet',  # Set the content of the file
+  ensure  => file,
+  path    => '/tmp/school',
+  mode    => '0744',
+  owner   => 'www-data',
+  group   => 'www-data',
+  content => 'I love Puppet'
 }
