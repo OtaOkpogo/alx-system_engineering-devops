@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-#Script to generate an SSh key
+# Generating SSH key-pairs according to Task requirements
 
-ssh-keygen -t rsa -f school -b 4096 -N betty
+ssh-keygen -t rsa -b 4096 -P betty -f school
