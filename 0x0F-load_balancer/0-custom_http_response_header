@@ -1,47 +1,28 @@
 #!/usr/bin/env bash
-# This script configures Nginx to add a custom X-Served-By header with the server's hostname
+# Customizing a 404-error_page
 
-# Install Nginx if not already installed
-if ! dpkg -l | grep -q "nginx"; then
-  sudo apt-get update
-  sudo apt-get install -y nginx
-fi
+# Updating Packages before performing installations
+sudo apt-get update
+sudo apt-get install -y nginx
 
-# Create a custom Nginx configuration file with the desired custom header
-cat <<EOF > /etc/nginx/sites-available/custom_header
-server {
-    listen 80;
-    server_name _;
+# Creating an index.html page
+echo "Hello World!" | sudo tee /var/www/html/index.html
 
-    location / {
-        add_header X-Served-By \$hostname;
-    }
-}
-EOF
+# Performing a "moved permanently redirection" (301)
+new_string="server_name _;\n\trewrite ^\/redirect_me https:\/\/github.com\/OtaOkpogo permanent;"
+sudo sed -i "s/server_name _;/$new_string/" /etc/nginx/sites-enabled/default
 
-# Create a symbolic link to enable the custom configuration
-if [ ! -f /etc/nginx/sites-enabled/custom_header ]; then
-  ln -s /etc/nginx/sites-available/custom_header /etc/nginx/sites-enabled/
-fi
+# Creating a 404 Custom error page
+echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html
+new_string="listen 80 default_server;\n\terror_page 404 \/404.html;\n\tlocation = \/404.html {\n\t\troot \/var\/www\/html;\n\t\tinternal;\n\t}"
 
-# Remove the default Nginx site configuration if it exists
-if [ -f /etc/nginx/sites-enabled/default ]; then
-    rm /etc/nginx/sites-enabled/default
-fi
+sudo sed -i "s/listen 80 default_server;/$new_string/" /etc/nginx/sites-enabled/default
 
-# Test Nginx configuration to avoid syntax errors
-if nginx -t; then
-  # Reload Nginx to apply the new configuration
-  service nginx reload
+# Creating an HTTP response header
+sudo sed -i "/server_name _/a add_header X-Served-By $HOSTNAME;" /etc/nginx/sites-enabled/default
 
-  # Check if the Nginx service is running
-  if service nginx status | grep -q "is running"; then
-    echo "Nginx has been configured to add the custom X-Served-By header with the server's hostname."
-  else
-    echo "Nginx failed to start or restart. Please check the configuration."
-    exit 1
-  fi
-else
-  echo "Nginx configuration test failed. Please check the configuration file for syntax errors."
-  exit 1
-fi
+# Testing configurations for syntax errors
+sudo nginx -t
+
+# Restart nginx after implementing changes
+sudo service nginx restart
