@@ -1,30 +1,30 @@
-# Ensure Nginx is installed
+# Setup New Ubuntu server with nginx
+# and add a custom HTTP header
+
+exec { 'update system':
+        command => '/usr/bin/apt-get update',
+}
+
 package { 'nginx':
-  ensure => installed,
+	ensure => 'installed',
+	require => Exec['update system']
 }
 
-# Define the custom header configuration in Nginx
-file { '/etc/nginx/sites-available/custom_header':
-  ensure  => present,
-  content => "# Custom HTTP header configuration\nserver {\n  listen 80;\n  server_name _;\n  location / {\n    add_header X-Served-By $hostname;\n    # Other configuration options\n  }\n}\n",
-  notify  => Service['nginx'],
+file {'/var/www/html/index.html':
+	content => 'Hello World!'
 }
 
-# Create a symbolic link to enable the site
-file { '/etc/nginx/sites-enabled/custom_header':
-  ensure => link,
-  target => '/etc/nginx/sites-available/custom_header',
-  require => File['/etc/nginx/sites-available/custom_header'],
+exec {'redirect_me':
+	command => 'sed -i "24i\	rewrite ^/redirect_me https://th3-gr00t.tk/ permanent;" /etc/nginx/sites-available/default',
+	provider => 'shell'
 }
 
-# Reload Nginx to apply the changes
-service { 'nginx':
-  ensure    => running,
-  enable    => true,
-  subscribe => File['/etc/nginx/sites-enabled/custom_header'],
+exec {'HTTP header':
+	command => 'sed -i "25i\	add_header X-Served-By \$hostname;" /etc/nginx/sites-available/default',
+	provider => 'shell'
 }
 
-# Notify when the custom header is applied
-notify { 'Custom header applied':
-  message => 'The custom X-Served-By header has been configured on this server.',
+service {'nginx':
+	ensure => running,
+	require => Package['nginx']
 }
